@@ -1,0 +1,75 @@
+\chapter{Konzept}
+
+\section{Subgradientenverfahren}
+Das \emph{Subgradientenverfahren} wurde von \cite{HeKa71} \todo{verify} vorgeschlagen um das duale Lagrange Problem (LDP) approximativ zu lösen. Das Verfahren ist iterativ, dabei wird in jeder Iteration zuerst das Lagrange Problem $Z_D(\mu)$ für gegebene Multiplikatoren $\mu$ gelöst und im zweiten Schritt neue Multiplikatoren für die nächste Iteration berechnet. Das ganze wird wiederholt bis eine Abbruchbedingung erfüllt ist.
+\begin{algorithm}
+	\label{subgradientenverfahren}
+	\caption{Das Subgradientenverfahren}
+	Initialisiere $\mu^0$\\
+	Iterationszähler $k$ = 0\\
+	Berechne obere Schranke $Z^*$ (evtl. heuristisch)\\	
+	\While{Keine Abbruchbedingung erfüllt} {
+		Löse Lagrange Relaxation $Z_D(\mu^k), x^k$ ist die optimale Lösung\\
+		Berechne Subgradient-Vektor $s^t = b - Ax^k$\\
+		Berechne Suchrichtung $d^k$ \\
+		Berechne Schrittweite $t^k$ \\
+		Aktualisiere Multiplikatoren $\mu^{k+1} = \mu^k + t^k d^k$\\
+		$k = k + 1$\\
+	}
+\end{algorithm}
+
+Algorithmus \ref{subgradientenverfahren} beschreibt die Grundstruktur des Verfahrens. Die entscheidenden Faktoren, die die Performanz des Verfahrens und die Lösungsqualität bestimmen, sind die Berechnung der Suchrichtung $d^k$ und der Schrittweite $t^k$ sowie die Abbruchbedingungen. Diese Aspekte sollen im weiteren genauer erläutert werden.
+
+\section{departure Time heuristic adjuster}
+
+
+
+\(ref\) Kantenergebnisse-Referenz
+
+\begin{algorithm}
+	\label{Abfahrtszeit-Einsteller}
+	\caption{Heuristischer Abfahrtszeit-Einsteller}
+	\KwIn{die Pfad-Kombinationen mit frühesten Abfahrtzeiten\((k_i , p_i^{t_{min}})\)}
+	\KwOut{optimaler Routenplan \(RP(k_i , p_i^{t^*})\)}
+	$ RP \gets$ initialisiere mit \((k_i , p_i^{t_{min}})\)\\
+	\For{jede Kombination \(k_i , p_i\) aus Input}{$ ref \gets Aggregation(k_i , p_i^{t_{min}})$ }
+	\While{\(ref\) enthält eine Kante mit Verschiebungspotential}
+	{
+    	$L \gets$ initialisiere eine neue Verschiebungsiste\\
+	    Kandidatenkante \(er_{ij}^{t_m} \gets\) erste Kante mit Verschiebungspotential\\auf \(t_n\) (maximal vorkommende Abfahrtzeit) aus \(ref\)\\
+        \If{\(e_{ij}^{t_n} \) ist für die durchfahrende Sendungen auf  \(e_{ij}^{t_m} \) zulässig}{
+        	\(k_i \gets\) die durchfahrende Sendungen auf  \(e_{ij}^{t_m} \)\\
+            aktualisiere VerschiebungsListe \(L \gets k_i , e_{ij}^{t_m}  , t_n\)\\
+            \(Tiefensuche Der Sendungspfade( L )\)\\
+            \(VerschiebungUndEvaluierung(L)\)\\
+       }  
+	}
+\end{algorithm}
+
+\begin{algorithm}
+	\label{TiefensuchePfad}
+	\caption{Tiefensuche Der Sendungspfade}
+	\KwIn{Untermenge der Verschiebungsliste (neue Verschiebungsaufträge) $L_n$}
+	\For{jede Verschiebung \(k_i , e_{ij}^{t_m}  , t_n\) aus $L_n$}
+	{
+	    $p_k \gets$ aktuell optimaler Pfad der Sendung $k_i$ aus $RP$\\
+        $t_i^n \gets$ maximal zulässige Abfahrtzeit aller Kanten der $p_k$ nach $e_{ij}^{t_n}$\\
+	    \For{jede Kante $e_{lm}^{t_r}$ aus $p_k$}
+	    {
+	        \If{$e_{lm}$ ist $e_{ij}$}{setze fort}
+	        
+	        $er_{lm}^{t_r} \gets$ hole das gemappte Kantenergebnis aus $ref$\\
+	        
+	        \If{versuche alle durchfahrende Sendungen in $er_{lm}^{t_r}$ auf ein spätere Zeitpunkt bis zum maximal $t_l^n$ zu verschieben}
+	            {
+	                \If{neue Verschiebungszeitpunkt $< t_l^n$}
+	                {initialisiere die neue Verschiebungsliste}
+	                
+	                $L_n \gets$ neue Verschiebungsaufträge\\
+	                $Tiefensuche Der Sendungspfade( L_n )$\\
+	            }
+	    }
+	}
+\end{algorithm}
+
+versuche alle durchfahrende Sendungen in $er_{lm}^{t_r}$ auf ein spätere Zeitpunkt bis zum maximal $t_l^n$ zu verschieben
